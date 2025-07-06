@@ -15,6 +15,7 @@
 #include <ranges>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -22,13 +23,14 @@
 
 namespace analyser::metric {
 
-void MetricExtractor::RegisterMetric(std::unique_ptr<IMetric> metric) {
-    // здесь ваш код
-}
+void MetricExtractor::RegisterMetric(std::unique_ptr<IMetric> metric) { metrics.push_back(std::move(metric)); }
 
 MetricResults MetricExtractor::Get(const function::Function &func) const {
-    // здесь ваш код
-    return {};
+    MetricResults metric_results;
+    for (const auto &metric : metrics) {
+        metric_results.push_back((*metric).Calculate(func));
+    }
+    return metric_results;
 }
 
 }  // namespace analyser::metric

@@ -10,6 +10,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <ranges>
 #include <sstream>
 #include <string>
@@ -32,7 +33,7 @@ struct Function {
 };
 
 struct FunctionExtractor {
-    std::vector<Function> Get(const analyser::file::File& file);
+    std::vector<Function> Get(const analyser::file::File &file);
 
 private:
     struct Position {
@@ -52,13 +53,10 @@ private:
         Position end;
     };
 
-    FunctionNameLocation GetNameLocation(const std::string& function_ast);
-    std::string GetNameFromSource(const std::string& function_ast,
-                                  const std::vector<std::string>& lines);
-    std::optional<ClassInfo> FindEnclosingClass(const std::string& ast,
-                                                const FunctionNameLocation& func_loc);
-    std::string GetClassNameFromSource(const ClassInfo& class_info,
-                                       const std::vector<std::string>& lines);
+    FunctionNameLocation GetNameLocation(const std::string &function_ast);
+    std::string GetNameFromSource(const std::string &function_ast, const std::vector<std::string> &lines);
+    std::optional<ClassInfo> FindEnclosingClass(const std::string &ast, const FunctionNameLocation &func_loc);
+    std::string GetClassNameFromSource(const ClassInfo &class_info, const std::vector<std::string> &lines);
 };
 
-} // namespace analyser::function
+}  // namespace analyser::function
