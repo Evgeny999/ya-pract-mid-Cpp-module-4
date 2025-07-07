@@ -30,6 +30,8 @@ struct IAccumulator {
     virtual void Reset() = 0;
     virtual ~IAccumulator() = default;
 
+    bool IsFinalized() const { return is_finalized; }
+
 protected:
     bool is_finalized = false;
 };
@@ -41,10 +43,10 @@ struct MetricsAccumulator {
     }
     template <typename Accumulator>
     const Accumulator &GetFinalizedAccumulator(const std::string &metric_name) const {
-        if (!accumulators.contains(metric_name) || !accumulators.at(metric_name).get()->is_finalized) {
+        if (!accumulators.contains(metric_name) || !accumulators.at(metric_name).get()->IsFinalized()) {
             throw std::runtime_error("this accumulator does not exist");
         }
-        return accumulators.at(metric_name).get();
+        return *dynamic_cast<Accumulator *>(accumulators.at(metric_name).get());
     }
     void AccumulateNextFunctionResults(const std::vector<metric::MetricResult> &metric_results) const;
 

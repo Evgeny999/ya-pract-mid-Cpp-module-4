@@ -90,14 +90,44 @@ int main(int argc, char *argv[]) {
   // запустите analyser::SplitByFiles
   auto resultSplitByFiles = analyser::SplitByFiles(resultAnalyse);
   // запустите analyser::AccumulateFunctionAnalysis для каждого подмножества
-  // analyser::AccumulateFunctionAnalysis(resultSplitByFiles, accumulator);
+
+  std::ranges::for_each(resultSplitByFiles, [&accumulator](
+                                                const auto &file_info) {
+    analyser::AccumulateFunctionAnalysis(file_info.second, accumulator);
+    std::print("Accumulated Analysis for file {}", file_info.first);
+    auto averageAccumulator = accumulator.GetFinalizedAccumulator<
+        analyser::metric_accumulator::metric_accumulator_impl::
+            AverageAccumulator>("CyclomaticComplexityMetric");
+    auto sumAverageAccumulator = accumulator.GetFinalizedAccumulator<
+        analyser::metric_accumulator::metric_accumulator_impl::
+            SumAverageAccumulator>("CountParametersMetric");
+    std::print("aggregated_averageAccumulator: {}", averageAccumulator.Get());
+    auto sumAverage = sumAverageAccumulator.Get();
+    std::print("aggregated_averageAccumulator: sum = {} average = {}",
+               sumAverage.sum, sumAverage.average);
+    accumulator.ResetAccumulators();
+  });
   // результатов метрик выведете результаты на консоль
 
-  // accumulator.GetFinalizedAccumulator();
-
   // запустите analyser::SplitByClasses
-  // auto resultSplitByClasses = analyser::SplitByClasses(resultAnalyse);
+  auto resultSplitByClasses = analyser::SplitByClasses(resultAnalyse);
   // запустите analyser::AccumulateFunctionAnalysis для каждого подмножества
+  std::ranges::for_each(resultSplitByClasses, [&accumulator](
+                                                  const auto &class_info) {
+    analyser::AccumulateFunctionAnalysis(class_info.second, accumulator);
+    std::print("Accumulated Analysis for file {}", class_info.first);
+    auto averageAccumulator = accumulator.GetFinalizedAccumulator<
+        analyser::metric_accumulator::metric_accumulator_impl::
+            AverageAccumulator>("CyclomaticComplexityMetric");
+    auto sumAverageAccumulator = accumulator.GetFinalizedAccumulator<
+        analyser::metric_accumulator::metric_accumulator_impl::
+            SumAverageAccumulator>("CountParametersMetric");
+    std::print("aggregated_averageAccumulator: {}", averageAccumulator.Get());
+    auto sumAverage = sumAverageAccumulator.Get();
+    std::print("aggregated_averageAccumulator: sum = {} average = {}",
+               sumAverage.sum, sumAverage.average);
+    accumulator.ResetAccumulators();
+  });
   // результатов метрик выведете результаты на консоль
 
   // запустите analyser::AccumulateFunctionAnalysis для всех результатов

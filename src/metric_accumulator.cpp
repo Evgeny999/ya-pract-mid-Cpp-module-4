@@ -26,6 +26,8 @@ void MetricsAccumulator::AccumulateNextFunctionResults(const std::vector<metric:
     }
 }
 
-void MetricsAccumulator::ResetAccumulators() { accumulators.clear(); }
+void MetricsAccumulator::ResetAccumulators() {
+    std::ranges::for_each(accumulators, [](const auto &accumulator) { accumulator.second->Reset(); });
+}
 
 }  // namespace analyser::metric_accumulator
