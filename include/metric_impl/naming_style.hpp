@@ -19,9 +19,9 @@
 #include "metric.hpp"
 
 namespace analyser::metric::metric_impl {
-
-struct NamingStyleMetric: IMetric {
-    // здесь ваш код
+// Не понял, что эта метрика должна показывать(
+struct NamingStyleMetric : IMetric {
+    MetricResult::ValueType CalculateImpl(const function::Function &f) const override;
+    std::string Name() const override;
 };
-
-} // namespace analyser::metric::metric_impl
+}  // namespace analyser::metric::metric_impl

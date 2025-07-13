@@ -1,5 +1,6 @@
 #include "file.hpp"
 
+#include <array>
 #include <cstring>
 #include <fstream>
 #include <iostream>
