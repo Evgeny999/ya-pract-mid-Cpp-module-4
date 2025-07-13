@@ -26,11 +26,10 @@ namespace analyser::metric {
 void MetricExtractor::RegisterMetric(std::unique_ptr<IMetric> metric) { metrics.push_back(std::move(metric)); }
 
 MetricResults MetricExtractor::Get(const function::Function &func) const {
-    MetricResults metric_results;
-    for (const auto &metric : metrics) {
-        metric_results.push_back((*metric).Calculate(func));
-    }
-    return metric_results;
+    auto vec = metrics | rv::transform([func](const auto &metric) { return (*metric).Calculate(func); }) |
+               std::ranges::to<std::vector>();
+
+    return vec;
 }
 
 }  // namespace analyser::metric

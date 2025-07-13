@@ -57,25 +57,28 @@ struct MetricExtractor {
 
 namespace {
 MetricResult::ValueType FindNumExpressions(const function::Function &f,
-                                           const std::unordered_set<std::string> node_types) {
+                                           const std::unordered_set<std::string> &node_types) {
     /*std::println("***HERE1***");
     std::println("f.ast\n = {}", f.ast);*/
     return std::ranges::count_if(f.ast | std::views::split('\n'),  // Split by lines
                                  [&node_types](auto &&line_range) {
-                                     std::string line(line_range.begin(), line_range.end());
                                      // std::println("line = {}", line);
                                      //   Check if any word in the line matches a target
-                                     return std::ranges::any_of(
-                                         line_range | std::views::split(' '),  // Split line into words
+                                     return std::ranges::any_of(node_types, [line_range](const auto &type) {
+                                         std::string line(line_range.begin(), line_range.end());
+                                         return line.contains(type);
+                                     });
+                                     /*return std::ranges::any_of(
+                                         line_range | std::views::split(' '), // Split line into words
                                          [&node_types](auto &&word_range) {
-                                             std::string word(word_range.begin(), word_range.end());
-                                             // Ведущий символ '(' нас не интересует
-                                             if (!word.empty() && word[0] == '(') {
-                                                 word = word.substr(1);  // Remove first character
-                                             }
-                                             // std::println("word = {}", word);
-                                             return !word.empty() && node_types.contains(word);
-                                         });
+                                           std::string word(word_range.begin(), word_range.end());
+                                           // Ведущий символ '(' нас не интересует
+                                           if (!word.empty() && word[0] == '(') {
+                                             word = word.substr(1); // Remove first character
+                                           }
+                                           // std::println("word = {}", word);
+                                           return !word.empty() && node_types.contains(word);
+                                         });*/
                                  });
 }
 }  // namespace

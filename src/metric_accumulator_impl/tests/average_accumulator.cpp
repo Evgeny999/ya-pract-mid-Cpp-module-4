@@ -12,10 +12,9 @@ TEST(AverageAccumulator, SimpleCheck) {
     AverageAccumulator averageAccumulator{};
 
     metric::MetricResult metricFirst, metricSecond;
-    metricFirst.value = 3;
-    metricSecond.value = 4;
-    averageAccumulator.Accumulate(metricFirst);
-    averageAccumulator.Accumulate(metricSecond);
+    averageAccumulator.Accumulate(metric::MetricResult{.value = 3});
+    averageAccumulator.Accumulate(metric::MetricResult{.value = 4});
+    averageAccumulator.Finalize();
 
     EXPECT_DOUBLE_EQ(averageAccumulator.Get(), 3.5);
 }

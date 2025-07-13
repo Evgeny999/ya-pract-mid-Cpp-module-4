@@ -39,7 +39,7 @@ MetricResult::ValueType CountParametersMetric::CalculateImpl(const function::Fun
     // std::print("ast = {}", params_ast);
     //  для подсчёта параметров считаем количество строк с "identifier" и
     //  "(typed_default_parameter" в начале (после некоторо поличества пробелов)
-    std::array<std::string, 3> targets = {
+    const std::array<std::string, 3> targets = {
         std::string{"(identifier"},               // 10 chars
         std::string{"(typed_default_parameter"},  // 21 chars
         std::string{"(default_parameter"}         // 21 chars
@@ -50,8 +50,7 @@ MetricResult::ValueType CountParametersMetric::CalculateImpl(const function::Fun
 
         // Check if remaining chars start with "identifier"
         return std::ranges::any_of(targets, [&](std::string_view target) {
-            return std::ranges::distance(first_char, line.end()) >= target.size() &&
-                   std::ranges::equal(std::ranges::subrange(first_char, std::next(first_char, target.size())), target);
+            return std::ranges::equal(std::ranges::subrange(first_char, std::next(first_char, target.size())), target);
         });
     });
 }

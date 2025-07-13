@@ -36,58 +36,55 @@ namespace rs = std::ranges;
 namespace {
 auto AnalyseFunctions(const std::vector<std::string> &files,
                       const analyser::metric::MetricExtractor &metric_extractor) {
-    std::vector<analyser::file::File> files_vector;
-    // Создание списка стуктур File на основе имён файлов
-    for (const auto &file : files) {
-        files_vector.push_back(analyser::file::File{file});
-    }
 
-    std::vector<analyser::function::Function> functions_vector;
-    for (const auto &file : files_vector) {
+    auto result =
+        // Создание списка стуктур File на основе имён файлов
+        files | rv::transform([](const auto &file) { return analyser::file::File{file}; }) |
         // Получаем список функций для отдельного файла из списка файлов
-        auto functions = analyser::function::FunctionExtractor{}.Get(file);
-        // Объединяем список функций в один список
-        functions_vector.insert(functions_vector.end(), functions.begin(), functions.end());
-    }
-    // Вуктор пар: объект функции - набор результатов вычисления метрик
-    std::vector<std::pair<analyser::function::Function, analyser::metric::MetricResults>> result;
-
-    // Набиваем итоговый вектор результатоми вычисления метрик для каждой функции
-
-    for (const auto &function : functions_vector) {
-        result.push_back({function, metric_extractor.Get(function)});
-    }
+        rv::transform([](const auto &fileStruct) { return analyser::function::FunctionExtractor{}.Get(fileStruct); }) |
+        rv::join | rv::transform([&metric_extractor](const auto &functionStruct) {
+            return std::make_pair(functionStruct, metric_extractor.Get(functionStruct));
+        });
 
     return result;
 }
 }  // namespace
-
+/*
+Возможно сигнатура функции должна быть auto SplitByClasses(auto &&analysis)?
+Иначе нужен сложный воркэраунд т.к. по константному отображению диапазонга
+нельзя итерироваться
+*/
 auto SplitByClasses(const auto &analysis) {
-    auto filtered_view = analysis | std::views::filter([](const auto &function_info) {
+    // Step 1: Create a non-const view without using pipes
+    auto non_const_view = std::views::all(const_cast<std::remove_cvref_t<decltype(analysis)> &>(analysis));
+
+    // Step 2: Materialize using ranges::to
+    auto materialized = non_const_view | std::ranges::to<std::vector>();
+
+    auto filtered_view = materialized | std::views::filter([](const auto &function_info) {
                              return function_info.first.class_name.has_value();
                          });
-    // Итоговый список пар: имя класса - вектор пар (функция - метрики)
-    std::unordered_map<std::string,
-                       std::vector<std::pair<analyser::function::Function, analyser::metric::MetricResults>>>
-        result;
 
-    for (const auto &function_info : filtered_view) {
-        // имя класса (ключ): вектор пар функция метрики (значение)
-        result[function_info.first.class_name.value()].push_back(function_info);
-    }
+    auto result = filtered_view | std::views::chunk_by([](const auto &function_first, const auto &function_second) {
+                      return function_first.first.class_name.value() == function_second.first.class_name.value();
+                  });
 
     return result;
 }
 
 auto SplitByFiles(const auto &analysis) {
-    // Итоговый список пар: имя файла - вектор пар (функция - метрики)
-    std::unordered_map<std::string,
-                       std::vector<std::pair<analyser::function::Function, analyser::metric::MetricResults>>>
-        result;
-    for (const auto &function_info : analysis) {
-        // имя файла (ключ): вектор пар функция метрики (значение)
-        result[function_info.first.filename].push_back({function_info.first, function_info.second});
-    }
+    // Step 1: Create a non-const view without using pipes
+    auto non_const_view = std::views::all(const_cast<std::remove_cvref_t<decltype(analysis)> &>(analysis));
+
+    // Step 2: Materialize using ranges::to
+    auto materialized = non_const_view | std::ranges::to<std::vector>();
+    auto filtered_view = materialized | std::views::filter([](const auto &function_info) {
+                             return function_info.first.class_name.has_value();
+                         });
+
+    auto result = filtered_view | std::views::chunk_by([](const auto &function_first, const auto &function_second) {
+                      return function_first.first.class_name.value() == function_second.first.class_name.value();
+                  });
 
     return result;
 }

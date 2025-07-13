@@ -14,6 +14,7 @@ TEST(SumAverageAccumulator, SimpleCheck) {
     metricSecond.value = 4;
     sumAverageAccumulator.Accumulate(metricFirst);
     sumAverageAccumulator.Accumulate(metricSecond);
+    sumAverageAccumulator.Finalize();
 
     auto result = sumAverageAccumulator.Get();
     EXPECT_DOUBLE_EQ(result.average, 3.5);
